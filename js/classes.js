@@ -31,12 +31,15 @@ class View {
 
             if (elapsed > fpsInterval) {
                 for(var i = 0; i < objects.length; i++) {
-                    for(var j = 0; j < objects[i].length; j++) {
-                        then = now - (elapsed - fpsInterval);
-                        if(now > frameEndTime[i * j + j] || !frameEndTime[i * j + j]) {
-                            frameEndTime[i * j + j]= objects[i][j].animate(ctx);
-                        }
-                    } 
+                    then = now - (elapsed - fpsInterval);
+
+                    if(!frameEndTime[i]) {
+                        frameEndTime[i] = objects[i].animate(ctx, false);
+                    } else {
+                        objects[i].animate(ctx, false);
+                    }
+
+                    if(now > frameEndTime[i])  frameEndTime[i] = objects[i].animate(ctx, true);
                 }
             }
             requestAnimationFrame(draw);
@@ -69,8 +72,8 @@ class Animation {
         return this.rules[this.currentAnimation][this.currentFrameNumber];
     }
 
-    ended() {
-        if(this.repeatNumber < this.rules[this.currentAnimation]['repeat']) {
+    next() {
+         if(this.repeatNumber < this.rules[this.currentAnimation]['repeat']) {
             if(this.currentFrameNumber < this.rules[this.currentAnimation]['frames'].length - 1) {
                 this.currentFrameNumber++; 
             } else {
@@ -80,6 +83,10 @@ class Animation {
             return false;
         }
         return true;
+    }
+
+    ended() {
+        return this.repeatNumber >= this.rules[this.currentAnimation]['repeat'];
     }
 
     getCurrentFrameNumber() {
@@ -118,8 +125,8 @@ class Animation {
             posY, 
             Math.abs(this.getX1() - this.getX2()), 
             Math.abs(this.getY1() - this.getY2()));
-        var endTime = start + this.getCurrentFrameDuration();
-        return this.ended() ? 0 : endTime;
+
+        return this.ended() ? 0 : start + this.getCurrentFrameDuration();
     }  
 }
 
@@ -132,7 +139,8 @@ class Player {
         this.posY      = posY;
     }
 
-    animate(ctx) {
+    animate(ctx, next=false) {
+        if(next) this.animation.next(); 
         return this.animation.render(ctx, this.posX, this.posY);
     }
 }
@@ -144,7 +152,7 @@ class Map {
         this.height = height;
     }
 
-    animate(ctx) {
+    animate(ctx, next=false) {
         ctx.fillStyle = 'green';
         ctx.fillRect(0, 0, this.width, this.height);
         return 0;

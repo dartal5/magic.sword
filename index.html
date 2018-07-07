@@ -82,7 +82,7 @@
         var player2 = new Player('Aang', playerAnimation2, 100, 0);
         var map     = new Map(160, 100);
 
-        var gameView =  new View(main, [[map], [player1, player2]], 1000, 600);
+        var gameView =  new View(main, [map, player1, player2], 1000, 600);
 
         gameView.render();
     }
