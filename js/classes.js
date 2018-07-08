@@ -1,160 +1,72 @@
-// Class View
-class View {
+class Swordman extends Animatable {
 
-    constructor(window_, objects=[], width=100, height=100, fps=120) {
-        this.view = document.createElement('canvas');
-        this.view.setAttribute('width', width);
-        this.view.setAttribute('height', height);
-        this.ctx = this.view.getContext('2d');  
-        this.objects = objects;
-        this.fps = fps;
-        
-        window_.appendChild(this.view);  
-    }
-    
+    constructor(name, posX, posY) {
+        super(new Animation(
+                new Sprite('img/character.png', 
+                [[0,   0, 52,  72], [54,  0, 106, 72], [108, 0, 161, 72], 
+                 [162, 0, 215, 72], [216, 0, 269, 72], [270, 0, 323, 72], 
+                 [324, 0, 374, 72], [379, 0, 429, 72], [433, 0, 482, 72],
+                 [486, 0, 539, 72], [540, 0, 593, 72], [594, 0, 646, 72]]), 
 
-    render() {
-        var view    = this;
-        var objects = view.objects;
-        var ctx     = view.ctx
-
-        var fpsInterval = 1000 / view.fps;
-        var frameEndTime = [];
-
-        var now;
-        var elapsed;
-        var then = Date.now();
-        
-        requestAnimationFrame(function draw() {
-            now = Date.now();
-            elapsed = now - then;
-
-            if (elapsed > fpsInterval) {
-                for(var i = 0; i < objects.length; i++) {
-                    then = now - (elapsed - fpsInterval);
-
-                    if(!frameEndTime[i]) {
-                        frameEndTime[i] = objects[i].animate(ctx, false);
-                    } else {
-                        objects[i].animate(ctx, false);
-                    }
-
-                    if(now > frameEndTime[i])  frameEndTime[i] = objects[i].animate(ctx, true);
-                }
-            }
-            requestAnimationFrame(draw);
-        });
-    }  
-}
-
-
-class Sprite {
-
-    constructor(src, frames) {
-        this.img = Resources.get(src);
-        this.frames = frames;
-    }
-
-}
-
-
-class Animation {
-
-    constructor(sprite, rules) {
-        this.sprite = sprite;
-        this.rules  = rules;
-        this.currentAnimation = 0;
-        this.currentFrameNumber = 0;
-        this.repeatNumber = 0;
-    }
-
-    getCurrent() {
-        return this.rules[this.currentAnimation][this.currentFrameNumber];
-    }
-
-    next() {
-         if(this.repeatNumber < this.rules[this.currentAnimation]['repeat']) {
-            if(this.currentFrameNumber < this.rules[this.currentAnimation]['frames'].length - 1) {
-                this.currentFrameNumber++; 
-            } else {
-                this.repeatNumber++;
-                this.currentFrameNumber=0;
-            }
-            return false;
-        }
-        return true;
-    }
-
-    ended() {
-        return this.repeatNumber >= this.rules[this.currentAnimation]['repeat'];
-    }
-
-    getCurrentFrameNumber() {
-        return this.rules[this.currentAnimation]['frames'][this.currentFrameNumber];
-    }
-
-    getCurrentFrameDuration() {
-        return this.rules[this.currentAnimation]['duration'][this.currentFrameNumber];
-    }
-
-    getX1() {
-        return this.sprite.frames[this.getCurrentFrameNumber()][0];
-    }
-
-    getY1() {
-        return this.sprite.frames[this.getCurrentFrameNumber()][1]
-    }
-    
-    getX2() {
-        return this.sprite.frames[this.getCurrentFrameNumber()][2];
-    }
-
-    getY2() {
-        return this.sprite.frames[this.getCurrentFrameNumber()][3]
-    }
-
-    render(ctx, posX, posY) {
-        var start = Date.now();
-        ctx.drawImage(
-            this.sprite.img, 
-            this.getX1(), 
-            this.getY1(),
-            Math.abs(this.getX1() - this.getX2()), 
-            Math.abs(this.getY1() - this.getY2()), 
-            posX, 
-            posY, 
-            Math.abs(this.getX1() - this.getX2()), 
-            Math.abs(this.getY1() - this.getY2()));
-
-        return this.ended() ? 0 : start + this.getCurrentFrameDuration();
-    }  
-}
-
-class Player {
-
-    constructor(name, animation, posX=0, posY=0) {
+            [{ 'name': 'stand',      'repeat': 0, 'frames': [0               ], 'duration': [0]                  },
+             { 'name': 'moveDown',   'repeat': 3, 'frames': [1,   2,   1,   2], 'duration': [150, 150, 150, 150] },
+             { 'name': 'moveUp',     'repeat': 3, 'frames': [7,   8,   7,   8], 'duration': [150, 150, 150, 150] },
+             { 'name': 'moveLeft',   'repeat': 3, 'frames': [4,   5,   4,   5], 'duration': [150, 150, 150, 150] },
+             { 'name': 'moveRight',  'repeat': 3, 'frames': [10,  11,  10, 11], 'duration': [150, 150, 150, 150] }]));
         this.name      = name;
-        this.animation = animation;
         this.posX      = posX;
-        this.posY      = posY;
+        this.posY      = posY; 
+
+        this.actionArr = {
+            'stand'     : function() { }, 
+            'moveUp'    : function(next) { if(next) this.posY-=5},
+            'moveDown'  : function(next) { if(next) this.posY+=5},
+            'moveLeft'  : function(next) { if(next) this.posX-=5},
+            'moveRight' : function(next) { if(next) this.posX+=5},
+        }
+
+        this.currentAction = 'stand';
+        this.action = this.actionArr[this.currentAction];
+
+        var this_ = this;
+        document.addEventListener("keydown", function() { 
+            this_.actionChange(event['keyCode'])
+        });
     }
 
-    animate(ctx, next=false) {
-        if(next) this.animation.next(); 
-        return this.animation.render(ctx, this.posX, this.posY);
+    actionChange(keyCode) {
+        if(this.animation.finished) {
+            switch (keyCode) {
+                case 37:
+                    this.currentAction = 'moveLeft';
+                    this.animation.currentAnimation = 3;
+                    break;
+                case 39:
+                    this.currentAction = 'moveRight';
+                    this.animation.currentAnimation = 4;
+                    break;
+                case 38:
+                    this.currentAction = 'moveUp';
+                    this.animation.currentAnimation = 2;
+                    break;
+                case 40:
+                    this.currentAction = 'moveDown';
+                    this.animation.currentAnimation = 1;
+            }
+            this.animation.repeatNumber = 0;
+            this.animation.currentFrameNumber = 0;
+            this.action = this.actionArr[this.currentAction];
+        }
     }
 }
 
-class Map {
+class Map extends Renderable {
 
     constructor(width, height) {
+        super(function (ctx) { ctx.drawImage(Resources.get('img/background.png'), 0,  0, this.width, this.height) });
+
         this.width = width;
         this.height = height;
     }
 
-    animate(ctx, next=false) {
-        ctx.fillStyle = 'green';
-        ctx.fillRect(0, 0, this.width, this.height);
-        return 0;
-    }
 }

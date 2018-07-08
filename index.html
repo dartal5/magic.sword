@@ -8,85 +8,19 @@
     <div id="magic sword"></div>
 </body>
     <script src="js/resources.js"></script>
+    <script src="js/render.js"></script>
     <script src="js/classes.js"></script>
-    
     <script>
 
     var init = function() {
         var main = document.getElementById('magic sword');
-        
+        var map     = new Map(1000, 600);
+        var player1 = new Swordman('Zuko', 0,   0);
 
-        var playerSprite = new Sprite('img/character.png', 
-           [[0,   0, 53,  72], 
-            [54,  0, 107, 72], 
-            [108, 0, 162, 72], 
-            [164, 0, 216, 72], 
-            [216, 0, 270, 72], 
-            [271, 0, 323, 72], 
-            [324, 0, 375, 72], 
-            [376, 0, 430, 72], 
-            [431, 0, 483, 72],
-            [484, 0, 536, 72],
-            [537, 0, 593, 72],
-            [594, 0, 637, 72]]);
-
-        var playerAnimation1 = new Animation(playerSprite, 
-            [
-                {
-                    'repeat'  : 3, 
-                    'frames'  : [0,   1,   2,   0],
-                    'duration': [500, 500, 500, 1]
-                },
-                {
-                    'repeat'  : 3, 
-                    'frames'  : [6,   7,   8,   6],
-                    'duration': [500, 500, 500, 1]
-                },
-                {
-                    'repeat'  : 3, 
-                    'frames'  : [3,   4,   5,   3],
-                    'duration': [500, 500, 500, 1]
-                },
-                {
-                    'repeat'  : 3, 
-                    'frames'  : [9,   10,  11,  9],
-                    'duration': [500, 500, 500, 1]
-                }
-            ]);
-
-        var playerAnimation2 = new Animation(playerSprite, 
-            [
-                {
-                    'repeat'  : 3, 
-                    'frames'  : [0,   1,   2,   0],
-                    'duration': [500, 500, 500, 1]
-                },
-                {
-                    'repeat'  : 3, 
-                    'frames'  : [6,   7,   8,   6],
-                    'duration': [500, 500, 500, 1]
-                },
-                {
-                    'repeat'  : 3, 
-                    'frames'  : [3,   4,   5,   3],
-                    'duration': [500, 500, 500, 1]
-                },
-                {
-                    'repeat'  : 3, 
-                    'frames'  : [9,   10,  11,  9],
-                    'duration': [500, 500, 500, 1]
-                }
-            ]);
-
-        var player1 = new Player('Zuko', playerAnimation1, 0,   0);
-        var player2 = new Player('Aang', playerAnimation2, 100, 0);
-        var map     = new Map(160, 100);
-
-        var gameView =  new View(main, [map, player1, player2], 1000, 600);
-
+        var gameView =  new View(main, [map, player1], 1000, 600);
         gameView.render();
     }
 
-    Resources.use(['img/character.png'], [init]);
+    Resources.use(['img/character.png', 'img/background.png'], [init]);
     </script>
 <html>
